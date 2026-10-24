@@ -5,7 +5,7 @@ lua54 'yes'
 name 'sandbox-bridge-lib'
 author 'SKITTLE6969'
 description 'Shared compatibility layer that exposes QBCore/QBX style APIs on top of sandbox-base.'
-version '1.2.0'
+version '1.2.1'
 
 provide 'qb-core'
 provide 'qbx_core'
