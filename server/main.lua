@@ -56,10 +56,11 @@ local LOAD_ORDER = {
     { path = 'server/management.lua', deps = {'server/core.lua', 'server/jobs.lua'} },
     { path = 'server/persona_qbx.lua', deps = {'server/qbcore.lua', 'server/playerdata.lua'} },
     { path = 'server/persona_qbcore.lua', deps = {'server/qbcore.lua', 'server/playerdata.lua'} },
+    { path = 'server/persona_esx.lua', deps = {'server/playerdata.lua', 'server/jobs.lua', 'server/money.lua', 'server/inventory.lua', 'server/players.lua'} },
     { path = 'server/dispatch.lua', deps = {'server/core.lua'} },
     { path = 'server/mdt.lua', deps = {'server/core.lua', 'server/playerdata.lua'} },
     { path = 'server/compat.lua', deps = {'server/core.lua', 'server/dispatch.lua'} },
-    { path = 'server/exports.lua', deps = {'server/persona_qbx.lua', 'server/persona_qbcore.lua', 'server/dispatch.lua', 'server/mdt.lua'} },
+    { path = 'server/exports.lua', deps = {'server/persona_qbx.lua', 'server/persona_qbcore.lua', 'server/persona_esx.lua', 'server/dispatch.lua', 'server/mdt.lua'} },
     { path = 'server/events.lua', deps = {'server/core.lua', 'server/playerdata.lua'} },
     { path = 'server/startup.lua', deps = {'server/core.lua', 'server/events.lua'} },
 }
@@ -80,3 +81,9 @@ for i = 1, #LOAD_ORDER do
 end
 
 _G.SandboxBridge = ENV.SB
+
+-- ESX global for scripts that access it directly
+if not _G.ESX then
+    _G.ESX = {}
+end
+Include('server/callbacks.lua')

@@ -37,6 +37,22 @@ function ExportPersona()
     Util.AddExport('GetAudit', function()
         return SB.Audit and SB.Audit() or nil
     end)
+
+    ExportESXPersona()
+
+    -- Some ESX scripts call exports.es_extended:GetPlayerFromId
+    Util.AddExport('GetPlayerFromId', function(src)
+        if ESX and ESX.GetPlayerFromId then return ESX.GetPlayerFromId(src) end
+        return nil
+    end)
+    Util.AddExport('GetPlayerFromIdentifier', function(identifier)
+        if ESX and ESX.GetPlayerFromIdentifier then return ESX.GetPlayerFromIdentifier(identifier) end
+        return nil
+    end)
+    Util.AddExport('GetExtendedPlayers', function(key, value)
+        if ESX and ESX.GetExtendedPlayers then return ESX.GetExtendedPlayers(key, value) end
+        return {}
+    end)
 end
 
 ExportPersona()

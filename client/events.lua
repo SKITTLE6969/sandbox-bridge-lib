@@ -22,6 +22,24 @@ function OnPlayerLoaded()
     if IsPrimaryQB() then
         TriggerEvent('QBCore:Client:OnPlayerLoaded')
     end
+
+    -- ESX player loaded: build and store ESX.PlayerData.
+    if ESX then
+        if ESX.SetPlayerData then
+            local data = BuildPlayerData and BuildPlayerData()
+            if data then
+                ESX.SetPlayerData(data)
+                if ESX.GetPlayerData then
+                    local esxData = nil
+                    if type(ESX.GetPlayerData) == 'function' then
+                        esxData = ESX.GetPlayerData()
+                    end
+                    ESX.PlayerData = esxData or ESX.PlayerData or {}
+                end
+            end
+        end
+        TriggerEvent('esx:playerLoaded', ESX.PlayerData)
+    end
 end
 
 function OnPlayerUnloaded()
@@ -33,6 +51,11 @@ function OnPlayerUnloaded()
 
     if IsPrimaryQB() then
         TriggerEvent('QBCore:Client:OnPlayerUnload')
+    end
+
+    if ESX then
+        ESX.PlayerData = {}
+        TriggerEvent('esx:playerDropped')
     end
 end
 
@@ -122,10 +145,41 @@ RegisterNetEvent('sandbox_bridge:client:revive', function()
 end)
 
 if IsPrimaryQB() then
-    RegisterNetEvent('QBCore:Notify', function(message, notifType, duration)
+        RegisterNetEvent('QBCore:Notify', function(message, notifType, duration)
         ShowNotification(message, notifType, duration)
     end)
 end
+
+-- ESX client events
+RegisterNetEvent('esx:setAccountMoney', function(account)
+    if not LocalPlayer.state.loggedIn then return end
+    if ESX and type(account) == 'table' then
+        ESX.SetPlayerData and ESX.SetPlayerData('accounts', ESX.PlayerData.accounts or {})
+        if ESX.PlayerData.accounts then
+            ESX.PlayerData.accounts[account.name] = account.money
+        end
+        if account.name == 'money' then
+            ESX.SetPlayerData and ESX.SetPlayerData('money', account.money)
+        elseif account.name == 'bank' then
+            ESX.SetPlayerData and ESX.SetPlayerData('bank', account.money)
+        end
+    end
+    RefreshPlayerData()
+end)
+
+RegisterNetEvent('esx:setJob', function(job)
+    if not LocalPlayer.state.loggedIn then return end
+    if ESX and type(job) == 'table' then
+        ESX.PlayerData.job = job
+    end
+    RefreshPlayerData()
+end)
+
+RegisterNetEvent('esx:playerLoaded', function(xPlayer)
+    if ESX and type(xPlayer) == 'table' then
+        ESX.PlayerData = xPlayer
+    end
+end)
 
 -- QBX event bridge: keep local data fresh and let external scripts listen to
 -- the same events they would get from a real qbx_core.

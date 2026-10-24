@@ -69,6 +69,13 @@ function OnPlayerLoaded(src)
         TriggerEvent('QBCore:Server:PlayerLoaded', player)
     end
 
+    -- ESX lifecycle: scripts listen for esx:playerLoaded with the xPlayer.
+    if ESX and ESX.GetPlayerFromId then
+        local xPlayer = ESX.GetPlayerFromId(src)
+        TriggerEvent('esx:playerLoaded', src, xPlayer)
+        TriggerClientEvent('esx:playerLoaded', src, xPlayer)
+    end
+
     if IsPrimaryBridge() then
         TriggerClientEvent('sandbox_bridge:client:sync', src, BuildClientSnapshot(src))
     end
@@ -90,6 +97,8 @@ function OnPlayerUnloaded(src)
         TriggerEvent('QBCore:Server:OnPlayerUnload', src)
         TriggerClientEvent('qbx_core:client:playerLoggedOut', src)
     end
+    TriggerEvent('esx:playerDropped', src)
+    TriggerClientEvent('esx:playerDropped', src)
     Debug(('player %s unloaded'):format(src))
 
     Citizen.SetTimeout(10000, function()
@@ -135,6 +144,14 @@ function OnJobChanged(src)
         end
     end
 
+    -- ESX job update event carries the new xPlayer job table.
+    if ESX and ESX.GetPlayerFromId then
+        local xPlayer = ESX.GetPlayerFromId(src)
+        if xPlayer then
+            TriggerEvent('esx:setJob', src, xPlayer.job, xPlayer)
+            TriggerClientEvent('esx:setJob', src, xPlayer.job)
+        end
+    end
 end
 
 function OnDutyChanged(src)

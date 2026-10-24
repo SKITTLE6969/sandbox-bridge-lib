@@ -1,14 +1,14 @@
 # Sandbox Framework Bridge
 
-QBCore / QBX compatibility layer for the **Sandbox RP Framework**.
+QBCore / QBX / ESX compatibility layer for the **Sandbox RP Framework**.
 
 The Sandbox Framework uses its own export API (`sandbox-base`, `sandbox-characters`,
 `sandbox-jobs`, `sandbox-finance`, `sandbox-status`, `ox_inventory`). This bridge
-exposes the same data through the framework APIs that QBCore and QBX scripts
+exposes the same data through the framework APIs that QBCore, QBX and ESX scripts
 expect, without replacing any Sandbox resource.
 
-Any external resource that consumes the standard QBCore or QBX APIs will
-detect the server as `qbx_core` or `qb-core`. Community Bridge is
+Any external resource that consumes the standard QBCore, QBX or ESX APIs will
+detect the server as `qbx_core`, `qb-core` or `es_extended`. Community Bridge is
 **not** bundled with this server; the bridge ships its own equivalent
 Dispatch/MDT, Target, Doorlock, VehicleKey, Fuel, Clothing, ProgressBar,
 Notify, Weather, Skills and developer-tool compatibility layer (see
@@ -18,17 +18,18 @@ Notify, Weather, Skills and developer-tool compatibility layer (see
 
 ## Resources
 
-`qbx_core` and `qb-core` have been merged into `sandbox-bridge-lib`. It is the
-only framework resource and provides both names:
+`qbx_core`, `qb-core` and `es_extended` have been merged into `sandbox-bridge-lib`. It is the
+only framework resource and provides all three names:
 
 ```lua
 provide 'qb-core'
 provide 'qbx_core'
+provide 'es_extended'
 ```
 
 Scripts that declare `dependencies { 'qb-core' }` or
 `dependencies { 'qbx_core' }` therefore resolve to `sandbox-bridge-lib`, and
-`GetResourceState('qb-core')` / `GetResourceState('qbx_core')` report it as
+`GetResourceState('qb-core')` / `GetResourceState('qbx_core')` / `GetResourceState('es_extended')` report it as
 started.
 
 Both framework export sets are registered by the same resource. On FXServer
@@ -129,7 +130,8 @@ ensure sandbox-bridge-lib
 
 The resource declares `dependencies` on `sandbox-base`, `sandbox-characters`,
 `sandbox-jobs`, `sandbox-status`, `ox_inventory`, `oxmysql` and `ox_lib`, so
-FiveM starts them in a safe order even if the `ensure` line moves.
+FiveM starts them in a safe order even if the `ensure` line moves. It provides
+`qb-core`, `qbx_core` and `es_extended` for maximum compatibility.
 
 ---
 
@@ -565,9 +567,21 @@ missing.
 
 ---
 
-## QBX Core compatibility
+## QBX Core / ESX Legacy compatibility
 
-The bridge follows the documented Qbox API under the `qbx_core` name:
+The bridge follows the documented Qbox API under the `qbx_core` name and ESX Legacy
+API under `es_extended`/`ESX`:
+
+- **ESX shared/server** - `ESX.GetPlayerFromId`, `ESX.GetPlayerFromIdentifier`,
+  `ESX.GetExtendedPlayers`, `ESX.RegisterServerCallback`, `ESX.RegisterUsableItem`
+  and the `xPlayer` object with `getJob`, `setJob`, `addMoney`, `removeMoney`,
+  `addAccountMoney`, `getInventoryItem`, `addInventoryItem`, etc. Exports also
+  available as `exports['es_extended']:getSharedObject()` / `exports['sandbox-bridge-lib']:GetPlayerFromId`.
+- **ESX client** - `ESX.GetPlayerData`, `ESX.TriggerServerCallback`,
+  `ESX.ShowNotification`, `ESX.Progressbar`, `ESX.Game`, `ESX.PlayerData`
+  with `esx:playerLoaded`, `esx:setJob`, `esx:setAccountMoney` events.
+
+Qbox details:
 
 - **Shared exports** – `GetJobs`, `GetGangs`, `GetJob`, `GetGang`,
   `GetVehiclesByName`, `GetVehiclesByHash`, `GetVehiclesByCategory`,
@@ -682,8 +696,9 @@ Do **not** install a real `qb-core` or `qbx_core` resource next to
 its `provide` lines first if you ever migrate to a real framework.
 
 **An external bridge does not detect the framework**
-Check `GetResourceState('qbx_core')` or `GetResourceState('qb-core')`. A
-started `sandbox-bridge-lib` satisfies both through its `provide` entries.
+Check `GetResourceState('qbx_core')`, `GetResourceState('qb-core')` or
+`GetResourceState('es_extended')`. A started `sandbox-bridge-lib` satisfies all
+through its `provide` entries.
 
 **Exports break after restarting the bridge**
 On FXServer builds without native `provide` export support, scripts that already
@@ -706,6 +721,9 @@ the dependent resource (or reconnect the client) after restarting
 - Dispatch calls and MDT reports/warrants/notes/BOLOs are in-memory. The call
   history is bounded by `SandboxBridgeConfig.Dispatch.MaxCalls`; use a real
   MDT/database resource if you need long-term persistence.
+- ESX Legacy scripts are supported via `es_extended`/`ESX` (xPlayer, callbacks,
+  events). Money maps to cash/bank via ox_inventory and Renewed-Banking; some
+  ESX-specific account types may not be fully persisted.
 - If you install Community Bridge separately, disable its `dispatch`, `target`,
   `doorlock`, `vehiclekey`, `fuel`, `clothing`, `progressbar`, `notify`,
   `weather`, `skills` and `dev` modules (or leave them on — the bridge's own

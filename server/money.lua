@@ -28,6 +28,11 @@ end
 function TriggerMoneyChange(src, account, amount, operation, reason)
     TriggerEvent('QBCore:Server:OnMoneyChange', src, account, amount, operation, reason)
     TriggerClientEvent('QBCore:Client:OnMoneyChange', src, account, amount, operation, reason)
+    -- ESX exposes account updates through esx:setAccountMoney (client) and a
+    -- generic server event that scripts may hook.
+    local esxAccount = account == 'cash' and 'money' or account
+    TriggerEvent('esx:setAccountMoney', src, { name = esxAccount, money = SB.GetMoney(src, account) })
+    TriggerClientEvent('esx:setAccountMoney', src, { name = esxAccount, money = SB.GetMoney(src, account) })
 end
 
 function SB.AddMoney(src, account, amount, reason)

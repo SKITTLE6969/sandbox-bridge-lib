@@ -8,7 +8,7 @@ SandboxBridgeUtil = SandboxBridgeUtil or {}
 local Util = SandboxBridgeUtil
 
 ---Resource names this resource advertises through the manifest `provide` entries.
-Util.ProvidedResources = { 'qb-core', 'qbx_core' }
+Util.ProvidedResources = { 'qb-core', 'qbx_core', 'es_extended' }
 
 ---Register an export and, on FXServer builds without native provide/export
 ---support, expose it through the provided resource names as well.

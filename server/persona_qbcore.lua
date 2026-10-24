@@ -2,11 +2,11 @@
 -- QBCore persona exports.
 
 function ExportQBCorePersona()
-        _G.QBCore = QBCore
+    _G.QBCore = QBCore
 
-        Util.AddExport('GetCoreObject', function()
-            return QBCore
-        end)
+    Util.AddExport('GetCoreObject', function()
+        return QBCore
+    end)
 
-        return
+    return
 end

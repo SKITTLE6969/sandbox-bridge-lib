@@ -9,6 +9,7 @@ version '1.2.0'
 
 provide 'qb-core'
 provide 'qbx_core'
+provide 'es_extended'
 
 shared_scripts {
     '@ox_lib/init.lua',

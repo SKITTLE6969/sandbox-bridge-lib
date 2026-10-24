@@ -57,9 +57,10 @@ local LOAD_ORDER = {
     { path = 'client/groups.lua', deps = {'client/core.lua'} },
     { path = 'client/persona_qbx.lua', deps = {'client/qbcore.lua', 'client/playerdata.lua'} },
     { path = 'client/persona_qbcore.lua', deps = {'client/qbcore.lua', 'client/playerdata.lua'} },
+    { path = 'client/persona_esx.lua', deps = {'client/playerdata.lua', 'client/callbacks.lua', 'client/ui.lua', 'client/ui_compat.lua'} },
     { path = 'client/dispatch.lua', deps = {'client/core.lua'} },
     { path = 'client/target.lua', deps = {'client/core.lua'} },
-    { path = 'client/exports.lua', deps = {'client/persona_qbx.lua', 'client/persona_qbcore.lua', 'client/dispatch.lua', 'client/target.lua', 'client/vehicle.lua', 'client/appearance.lua', 'client/skills.lua', 'client/dev.lua', 'client/ui_compat.lua'} },
+    { path = 'client/exports.lua', deps = {'client/persona_qbx.lua', 'client/persona_qbcore.lua', 'client/persona_esx.lua', 'client/dispatch.lua', 'client/target.lua', 'client/vehicle.lua', 'client/appearance.lua', 'client/skills.lua', 'client/dev.lua', 'client/ui_compat.lua'} },
     { path = 'client/events.lua', deps = {'client/core.lua', 'client/playerdata.lua'} },
     { path = 'client/startup.lua', deps = {'client/core.lua', 'client/events.lua', 'client/playerdata.lua'} },
 }
@@ -75,4 +76,9 @@ for i = 1, #LOAD_ORDER do
         end
     end
     Include(module.path)
+end
+
+-- ESX global for scripts that access it directly
+if not _G.ESX then
+    _G.ESX = {}
 end

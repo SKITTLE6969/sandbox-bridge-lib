@@ -29,6 +29,9 @@ function ExportPersona()
         end
         return ShowNotification(text, notifyType, duration)
     end)
+
+    -- ESX client compatibility
+    ExportESXPersona()
 end
 
 ExportPersona()
