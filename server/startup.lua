@@ -91,9 +91,24 @@ function Init()
     end)
 
     RegisterCommand('bridgeinfo', function(source)
+        if source and tonumber(source) and tonumber(source) > 0 then
+            local allowed = false
+            if IsPlayerAceAllowed and (IsPlayerAceAllowed(source, 'admin') or IsPlayerAceAllowed(source, 'command.bridgeinfo')) then
+                allowed = true
+            end
+            if not allowed and QBCore and QBCore.Functions and QBCore.Functions.HasPermission then
+                allowed = QBCore.Functions.HasPermission(source, 'admin') or QBCore.Functions.HasPermission(source, 'god')
+            end
+            if not allowed then
+                if SB.Notify then SB.Notify(source, 'Insufficient permissions', 'error', 5000) end
+                return
+            end
+        end
         local jobCount = 0
-        for _ in pairs(SB.GetSharedJobs()) do jobCount = jobCount + 1 end
-        local players = SB.GetPlayers()
+        if SB.GetSharedJobs then
+            for _ in pairs(SB.GetSharedJobs()) do jobCount = jobCount + 1 end
+        end
+        local players = SB.GetPlayers and SB.GetPlayers() or {}
         local message = ('[sandbox-bridge] persona=%s jobs=%s players=%s'):format(
             RESOURCE,
             jobCount,
@@ -101,21 +116,36 @@ function Init()
         )
         print(message)
         if source and tonumber(source) and tonumber(source) > 0 then
-            SB.Notify(source, message, 'info', 10000)
+            if SB.Notify then SB.Notify(source, message, 'info', 10000) end
         end
     end, true)
 
     RegisterCommand('bridgeaudit', function(source)
-        local report = SB.PrintAudit()
         if source and tonumber(source) and tonumber(source) > 0 then
-            local lines = { ('audit: %d problem(s)'):format(#report.problems) }
-            for label, entry in pairs(report.modules) do
-                lines[#lines + 1] = ('%s=%s (%d/%d)'):format(label, tostring(entry.selected), #entry.started, entry.supported)
+            local allowed = false
+            if IsPlayerAceAllowed and (IsPlayerAceAllowed(source, 'admin') or IsPlayerAceAllowed(source, 'command.bridgeaudit')) then
+                allowed = true
             end
-            for _, problem in ipairs(report.problems) do
+            if not allowed and QBCore and QBCore.Functions and QBCore.Functions.HasPermission then
+                allowed = QBCore.Functions.HasPermission(source, 'admin') or QBCore.Functions.HasPermission(source, 'god')
+            end
+            if not allowed then
+                if SB.Notify then SB.Notify(source, 'Insufficient permissions', 'error', 5000) end
+                return
+            end
+        end
+        local report = SB.PrintAudit and SB.PrintAudit() or { modules = {}, problems = {} }
+        if source and tonumber(source) and tonumber(source) > 0 then
+            local lines = { ('audit: %d problem(s)'):format(#(report.problems or {})) }
+            for label, entry in pairs(report.modules or {}) do
+                lines[#lines + 1] = ('%s=%s (%d/%d)'):format(label, tostring(entry.selected), #(entry.started or {}), entry.supported or 0)
+            end
+            for _, problem in ipairs(report.problems or {}) do
                 lines[#lines + 1] = 'PROBLEM: ' .. problem
             end
-            SB.Notify(source, table.concat(lines, '\n'), #report.problems > 0 and 'warning' or 'success', 15000)
+            if SB.Notify then
+                SB.Notify(source, table.concat(lines, '\n'), #(report.problems or {}) > 0 and 'warning' or 'success', 15000)
+            end
         end
     end, true)
 end

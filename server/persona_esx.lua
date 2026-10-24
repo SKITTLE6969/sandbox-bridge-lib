@@ -218,6 +218,10 @@ local function BuildESXPlayer(src)
     end
 
     function xPlayer.kick(reason)
+        -- Kick is restricted to server-side trusted calls; still log for audit
+        if Config and Config.Debug then
+            print(('[sandbox-bridge][esx] xPlayer.kick called for %s: %s'):format(tostring(src), tostring(reason or 'Kicked')))
+        end
         DropPlayer(src, reason or 'Kicked')
     end
 
@@ -288,12 +292,17 @@ function ESX.RegisterServerCallback(name, handler)
     end
     RegisterNetEvent('esx:serverCallback:' .. name)
     AddEventHandler('esx:serverCallback:' .. name, function(requestId, ...)
-        local src = source
+        local src = tonumber(source)
+        if not src or src <= 0 then return end
+        if type(requestId) ~= 'number' and type(requestId) ~= 'string' then return end
         local ok, result = pcall(handler, src, function(value)
+            if not src or src <= 0 then return end
             TriggerClientEvent('esx:serverCallbackResponse:' .. name, src, requestId, value)
         end, ...)
         if not ok then
-            TriggerClientEvent('esx:serverCallbackResponse:' .. name, src, requestId, nil)
+            if src and src > 0 then
+                TriggerClientEvent('esx:serverCallbackResponse:' .. name, src, requestId, nil)
+            end
         end
     end)
     return true
